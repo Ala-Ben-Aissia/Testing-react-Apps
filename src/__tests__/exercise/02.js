@@ -8,7 +8,6 @@ global.IS_REACT_ACT_ENVIRONMENT = true
 
 test('counter increments and decrements when the buttons are clicked', () => {
   const {container} = render(<Counter />)
-  render(<Counter />)
 
   const [decrement, increment] = container.querySelectorAll('button')
   const message = container.firstChild.querySelector('div')
