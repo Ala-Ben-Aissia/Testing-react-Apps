@@ -29,16 +29,19 @@ test('displays the users current location', async () => {
   window.navigator.geolocation.getCurrentPosition.mockImplementation(
     (successCallback, errorCallback) => {
       promise
-        .then(() => act(() => successCallback(fakePosition)))
-        .catch(() => act(() => errorCallback()))
+        .then(() => successCallback(fakePosition))
+        .catch(() => errorCallback())
     },
   )
 
   render(<Location />)
   expect(screen.getByLabelText(/loading/i)).toBeInTheDocument()
 
-  resolve()
-  await promise
+  await act(async () => {
+    resolve() // calling the success callback (which will call the state updater function to trigger an update to the state), but React wasn't expecting that but we were!, and in top of that we want to make sure that all the side effects tiggered as a result of that state update are flushed before we continue on with our test, because it might be a slight delay between the state update (the running side effects) and the DOM (UI) update that is unperceptibe to the user but not here while testing
+    await promise // once this promise resolves => flush all the side effects that occur during that time
+  })
+  // we wrapped this callback in an act function (we usually don't since react-Testing Library handle this process)
 
   expect(screen.queryByText(/loading/i)).not.toBeInTheDocument()
   expect(screen.getByText(/latitude/i)).toHaveTextContent(
