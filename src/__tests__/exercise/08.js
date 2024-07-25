@@ -1,34 +1,24 @@
 // testing custom hooks
 // http://localhost:3000/counter-hook
 
-import {render, screen} from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import {act, render} from '@testing-library/react'
 import * as React from 'react'
 import useCounter from '../../components/use-counter'
 
-const TestComponent = () => {
-  const {count, decrement, increment} = useCounter()
-  return (
-    <div>
-      <p role="myTestCount">{count}</p>
-      <button onClick={decrement}>decrement</button>
-      <button onClick={increment}>increment</button>
-    </div>
-  )
-}
+const result = {}
 
 test('exposes the count and increment/decrement functions', async () => {
-  // 🐨 render the component
+  function TestComponent() {
+    Object.assign(result, useCounter())
+    return null
+  }
   render(<TestComponent />)
-  const incBtn = screen.getByRole('button', {name: /increment/i})
-  const decBtn = screen.getByRole('button', {name: /decrement/i})
-  const count = screen.getByRole('myTestCount')
 
-  expect(count).toHaveTextContent('0')
+  expect(result.count).toBe(0)
 
-  await userEvent.click(incBtn)
-  expect(count).toHaveTextContent('1')
+  act(() => result.increment())
+  expect(result.count).toBe(1)
 
-  await userEvent.click(decBtn)
-  expect(count).toHaveTextContent('0')
+  act(() => result.decrement())
+  expect(result.count).toBe(0)
 })
